@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS m_Llaves; CREATE TABLE m_Llaves(id serial PRIMARY KEY,nombre VARCHAR(255) NOT NULL,llavepublica TEXT NOT NULL,llaveprivada TEXT NOT NULL)
