@@ -52,7 +52,7 @@
 	      if(! result) {
 	      	return
 	      } else {
-	      	 // Con esta prop sabemos si la accion es para crear o actualizar
+	      	 // Con esta prop sabemos si la accion es para crear ó actualizar
             if(! this.accion) { // false
                 await this.crearLlave(this.llave)
             } else {
@@ -62,7 +62,7 @@
             if(! this.error.status) {
                 this.$router.push('/llaves')
              } else {
-             	console.log("Poseemos problemas marica")
+            	// si pasa algun error durante la creacion ó actualización de la llave
              }
 	      }
 	    }

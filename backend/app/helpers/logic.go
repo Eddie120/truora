@@ -120,7 +120,7 @@ func DecryptAES256(key []byte, privateKey string) string {
 	}
 
 	if len(cipherPrivateKey) < aes.BlockSize {
-		err = errors.New("Ciphertext block size is too short!")
+		err = errors.New("el tamano del bloque es demasiado corto")
 		panic(err)
 	}
 

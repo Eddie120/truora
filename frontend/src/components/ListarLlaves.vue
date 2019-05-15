@@ -2,9 +2,6 @@
     <div v-if="llaves.length">
 
     <b-card>
-
-
-
         <b-table
                 striped hover small
                 :items="llaves"
