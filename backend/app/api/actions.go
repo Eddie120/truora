@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"truora/backend/config"
-	"truora/backend/app/Models"
+	"truora/backend/app/models"
 	"truora/backend/app/helpers"
 )
 
@@ -30,7 +30,7 @@ func CrearLlave(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var modeloLlave Models.Llave
+	var modeloLlave models.Llave
 	error := decoder.Decode(&modeloLlave)
 
 	if error != nil {
@@ -48,10 +48,10 @@ func CrearLlave(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Llave privada generada \n",llavePrivadaEnTexto)
 	fmt.Println("Llave publica generada \n",llavePublicaEnTexto)
 
-	llavePrivadaAES256 := helpers.EncryptAES256([]byte(Models.KEY),llavePrivadaEnTexto)
+	llavePrivadaAES256 := helpers.EncryptAES256([]byte(models.KEY),llavePrivadaEnTexto)
 	fmt.Println("Llave privada AES-256 \n",llavePrivadaAES256)
 
-	llavePrivadaSinAES256 := helpers.DecryptAES256([]byte(Models.KEY),llavePrivadaAES256)
+	llavePrivadaSinAES256 := helpers.DecryptAES256([]byte(models.KEY),llavePrivadaAES256)
 	fmt.Println("Llave privada sin AES-256 \n",llavePrivadaSinAES256)
 
 
@@ -104,10 +104,10 @@ func ListarLlaves(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var llaves Models.Llaves
+	var llaves models.Llaves
 	for rows.Next() {
 
-		var llave Models.Llave
+		var llave models.Llave
 
 		err := rows.Scan(&llave.Id,&llave.Nombre)
 
@@ -130,7 +130,7 @@ func EncriptarMensaje(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var modeloParametros Models.Parametro
+	var modeloParametros models.Parametro
 	error := decoder.Decode(&modeloParametros)
 
 	if error != nil {
@@ -151,7 +151,7 @@ func EncriptarMensaje(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var llave Models.Llave
+	var llave models.Llave
 	for rows.Next() {
 
 		err := rows.Scan(&llave.Id,&llave.Nombre,&llave.LlavePublica)
@@ -185,7 +185,7 @@ func DesencriptarMensaje(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var modeloParametros Models.Parametro
+	var modeloParametros models.Parametro
 	error := decoder.Decode(&modeloParametros)
 
 	if error != nil {
@@ -209,7 +209,7 @@ func DesencriptarMensaje(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var llave Models.Llave
+	var llave models.Llave
 	for rows.Next() {
 
 		err := rows.Scan(&llave.Id,&llave.Nombre,&llave.LlavePrivada)
@@ -223,7 +223,7 @@ func DesencriptarMensaje(w http.ResponseWriter, r *http.Request) {
 
 	if llave.LlavePrivada != "" {
 
-		llavePrivadaSinAES256 := helpers.DecryptAES256([]byte(Models.KEY),llave.LlavePrivada)
+		llavePrivadaSinAES256 := helpers.DecryptAES256([]byte(models.KEY),llave.LlavePrivada)
 
 		block, _ := pem.Decode([]byte(llavePrivadaSinAES256))
 		llavePrivada, _ := x509.ParsePKCS1PrivateKey(block.Bytes)

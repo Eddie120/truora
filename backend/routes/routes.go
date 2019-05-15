@@ -3,18 +3,18 @@ package routes
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"truora/backend/app/Models"
+	"truora/backend/app/models"
 	"truora/backend/app/api"
 )
 
 
-var arreglo_endpoints = Models.Rutas{
+var arreglo_endpoints = models.Rutas{
 
-	Models.Ruta{"/", "GET", api.Index},
-	Models.Ruta{"/llave", "POST", api.CrearLlave},
-	Models.Ruta{"/llaves", "GET", api.ListarLlaves},
-	Models.Ruta{"/llave/encriptar", "POST",  api.EncriptarMensaje},
-	Models.Ruta{"/llave/desencriptar", "POST",  api.DesencriptarMensaje},
+	models.Ruta{"/", "GET", api.Index},
+	models.Ruta{"/llave", "POST", api.CrearLlave},
+	models.Ruta{"/llaves", "GET", api.ListarLlaves},
+	models.Ruta{"/llave/encriptar", "POST",  api.EncriptarMensaje},
+	models.Ruta{"/llave/desencriptar", "POST",  api.DesencriptarMensaje},
 }
 
 func CargarRutas() *chi.Mux {
