@@ -66,7 +66,7 @@ func CrearLlave(w http.ResponseWriter, r *http.Request) {
 	 }
 
 	if _, err := db.Exec(
-		"INSERT INTO m_Llaves (nombre,llavepublica,llaveprivada) VALUES ('"+ modeloLlave.Nombre +"', '"+ modeloLlave.LlavePublica +"', '"+ modeloLlave.LlavePrivada +"')"); err != nil {
+		"INSERT INTO m_Llaves (nombre,llavepublica,llaveprivada) VALUES ($1, $2, $3)",modeloLlave.Nombre, modeloLlave.LlavePublica,modeloLlave.LlavePrivada); err != nil {
 		log.Fatal(err)
 	}
 
