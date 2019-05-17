@@ -55,14 +55,13 @@
 	      	 // Con esta prop sabemos si la accion es para crear ó actualizar
             if(! this.accion) { // false
                 await this.crearLlave(this.llave)
-            } else {
-                console.log("Vamos bien estamos actualizando el nombre de la llave")
             }
 
             if(! this.error.status) {
                 this.$router.push('/llaves')
              } else {
             	// si pasa algun error durante la creacion ó actualización de la llave
+		console.log("Paso un error durante la peticion "+ this.error.message)
              }
 	      }
 	    }
