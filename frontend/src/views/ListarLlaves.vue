@@ -48,8 +48,8 @@
                 }
             }
         },
-        mounted() {
-            this.cargarLlaves()
+        async mounted() {
+           await this.cargarLlaves()
         },
     }
 </script>

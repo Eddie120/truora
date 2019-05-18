@@ -181,14 +181,12 @@
                 this.nameStateformEncrypt = null
                 this.nameStateformDecrypt = null
             },
-            handleSubmitEncrypt() {
+           async handleSubmitEncrypt() {
                 if (!this.checkFormValidity(1)) {
                     return
                 }
 
-                this.encriptar(this._encriptar).then((respuesta) => {
-                   console.log("Encriptacion finalizada")
-                })
+               await this.encriptar(this._encriptar)
             },
             checkFormValidity(tipo) {
                 let valid = null
@@ -202,13 +200,11 @@
 
                 return valid
             },
-            handleSubmitDecrypt() {
+          async  handleSubmitDecrypt() {
                 if (!this.checkFormValidity(2)) {
                     return
                 }
-                this.desencriptar(this._desencriptar).then((respuesta) => {
-                    console.log("Finalizo el proceso para desencriptar la cadena cifrada")
-                })
+               await this.desencriptar(this._desencriptar)
             },
         }
     }

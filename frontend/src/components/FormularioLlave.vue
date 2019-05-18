@@ -61,7 +61,7 @@
                 this.$router.push('/llaves')
              } else {
             	// si pasa algun error durante la creacion ó actualización de la llave
-		console.log("Paso un error durante la peticion "+ this.error.message)
+				console.log("Paso un error durante la peticion "+ this.error.message)
              }
 	      }
 	    }
