@@ -8,37 +8,28 @@ import (
 )
 
 
-var arreglo_endpoints = models.Rutas{
+var EndPoints = models.Routes{
 
-	models.Ruta{"/", "GET", api.Index},
-	models.Ruta{"/llave", "POST", api.CrearLlave},
-	models.Ruta{"/llaves", "GET", api.ListarLlaves},
-	models.Ruta{"/llave/encriptar", "POST",  api.EncriptarMensaje},
-	models.Ruta{"/llave/desencriptar", "POST",  api.DesencriptarMensaje},
+	models.Route{"/key", "POST", api.CreateKey},
+	models.Route{"/keys", "GET", api.Index},
+	models.Route{"/key/encrypt", "POST",  api.Encrypt},
+	models.Route{"/key/decrypt", "POST",  api.Decrypt},
 }
 
-func CargarRutas() *chi.Mux {
+func LoadRoutes() *chi.Mux {
 	r := chi.NewRouter()
 
-	// habilitamos los CORS del servidor
-	cors := cors.New(cors.Options{
-		// AllowedOrigins: []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins:   []string{"*"},
-		// AllowOriginFunc:  func(r *api.Request, origin string) bool { return true },
+	cors := cors.New(cors.Options {
+		AllowedOrigins:   []string{"http://localhost:8081/"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		//AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		//ExposedHeaders:   []string{"Link"},
-		//AllowCredentials: true,
-		//MaxAge:           300, // Maximum value not ignored by any of major browsers
 	})
 
 	r.Use(cors.Handler)
 
-	if len(arreglo_endpoints) > 0 {
-		for i := 0; i < len(arreglo_endpoints); i ++ {
-			r.MethodFunc(arreglo_endpoints[i].Metodo, arreglo_endpoints[i].Patron, arreglo_endpoints[i].Funcion)
-		}
+	for i := 0; i < len(EndPoints); i ++ {
+		r.MethodFunc(EndPoints[i].Method, EndPoints[i].Pattern, EndPoints[i].Function)
 	}
+
 
 	return r
 }

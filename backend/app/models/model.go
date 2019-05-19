@@ -4,25 +4,25 @@ import "net/http"
 
 const KEY = "AES256Key-32Characters1234567890"
 
-type Llave struct {
+type Key struct {
 	Id string `json:"id"`
-	Nombre string `json:"nombre"`
-	LlavePrivada string `json:"llaveprivada"`
-	LlavePublica string `json:"llavepublica"`
+	Name string `json:"name"`
+	PrivateKey string `json:"privateKey"`
+	PublicKey string `json:"publicKey"`
 }
 
-type Parametro struct {
+type Params struct {
 	Id string `json:"id"`
-	Texto string `json:"texto"`
+	Text string `json:"text"`
 }
 
-type Llaves []Llave
+type Keys []Key
 
 
-type Ruta struct {
-	Patron  string
-	Metodo  string
-	Funcion http.HandlerFunc
+type Route struct {
+	Pattern  string
+	Method  string
+	Function http.HandlerFunc
 }
 
-type Rutas []Ruta
+type Routes []Route

@@ -8,9 +8,12 @@ import (
 
 func main() {
 
-	r := routes.CargarRutas()
+	r := routes.LoadRoutes()
 
-	server := http.ListenAndServe(":3000", r)
+	err := http.ListenAndServe(":3000", r)
 
-	log.Fatal(server)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

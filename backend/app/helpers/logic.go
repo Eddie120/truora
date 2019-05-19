@@ -11,16 +11,15 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"io"
 )
 
 func EncodePrivateKeyToString(key *rsa.PrivateKey) string {
 
-	err := key.Validate()
+	error := key.Validate()
 
-	if err != nil {
-		fmt.Println("Error validando la llave privada: %s\n", err)
+	if error != nil {
+		panic("We can not validate private key "+ error.Error())
 	}
 
 	 privateKey := &pem.Block{
@@ -34,7 +33,11 @@ func EncodePrivateKeyToString(key *rsa.PrivateKey) string {
 }
 
 func EncodePublicKeyToString(pubkey rsa.PublicKey) string {
-	publicKeyBytes, _ := asn1.Marshal(pubkey)
+	publicKeyBytes, error := asn1.Marshal(pubkey)
+
+	if error != nil {
+		panic("We can not transform public key to bytes " + error.Error())
+	}
 
 	var pemkey = &pem.Block{
 		Type:  "PUBLIC KEY",
@@ -46,58 +49,47 @@ func EncodePublicKeyToString(pubkey rsa.PublicKey) string {
 	return publicKeyString
 }
 
-/***
- Para ver si las llaves de generaban de manera correcta
- */
-/*func savePEMKey(fileName string, key *rsa.PrivateKey) {
-	outFile, _ := os.Create(fileName)
-	defer outFile.Close()
 
-	var privateKey = &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(key),
-	}
-	_ = pem.Encode(outFile, privateKey)
-}*/
+func Encrypt(message string, publicKey *rsa.PublicKey) (string) {
+	messageEncrypted, error := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(message),nil)
 
-func Encrypt(mensaje string, llavePublica *rsa.PublicKey) (string) {
-	mensajeCifrado, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, llavePublica, []byte(mensaje),nil)
-	if err != nil {
-		fmt.Println("Error encriptando el mensaje con la llave publica : %s\n", err)
+	if error != nil {
+		panic("We can not encrypt message with the public key " + error.Error())
 	}
-	return base64.StdEncoding.EncodeToString(mensajeCifrado)
+
+	return base64.StdEncoding.EncodeToString(messageEncrypted)
 }
 
-func Decrypt(mensajeCifrado string, llavePrivada *rsa.PrivateKey) (string) {
-	mensaje,err := base64.StdEncoding.DecodeString(mensajeCifrado)
-	if err != nil {
-		fmt.Println("Error decodificando string: %s\n", err)
+func Decrypt(messageEncrypt string, privateKey *rsa.PrivateKey) (string) {
+	messageEncrypted, error := base64.StdEncoding.DecodeString(messageEncrypt)
+
+	if error != nil {
+		panic("We can not decode the message with base64 " + error.Error())
 	}
 
-	mensajeDescifrado, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, llavePrivada, mensaje,nil)
+	messageDecrypted, error := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, messageEncrypted,nil)
 
-	if err != nil {
-		fmt.Println("Error desencriptando el mensaje el mensaje: %s\n", err)
+	if error != nil {
+		panic("We can not decrypt the message " + error.Error())
 	}
 
-	return string(mensajeDescifrado)
+	return string(messageDecrypted)
 }
 
 func EncryptAES256(key []byte, privateKey string) string {
 
 	privateKeyByte := []byte(privateKey)
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		fmt.Println("Error creando un nuevo cipher: %s\n", err)
-		panic(err)
+	block, error := aes.NewCipher(key)
+	if error != nil {
+		panic("it could not create a block to the key " + string(key) + " " + error.Error())
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+len(privateKeyByte))
 	iv := ciphertext[:aes.BlockSize]
 
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
+		panic("We could not read all bytes "+ err.Error())
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
@@ -107,21 +99,20 @@ func EncryptAES256(key []byte, privateKey string) string {
 }
 
 func DecryptAES256(key []byte, privateKey string) string {
-	cipherPrivateKey, err := base64.URLEncoding.DecodeString(privateKey)
+	cipherPrivateKey, error := base64.URLEncoding.DecodeString(privateKey)
 
-	if err != nil {
-		fmt.Println("Error decodificando la llave privada: %s\n", err)
-		panic(err)
+	if error != nil {
+		panic("We could not read all bytes "+ error.Error())
 	}
 
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		panic(err)
+	block, error := aes.NewCipher(key)
+	if error != nil {
+		panic("it could not create a block to the key " + string(key) + " " + error.Error())
 	}
 
 	if len(cipherPrivateKey) < aes.BlockSize {
-		err = errors.New("el tamano del bloque es demasiado corto")
-		panic(err)
+		error = errors.New("the block size is really small")
+		panic(error)
 	}
 
 	iv := cipherPrivateKey[:aes.BlockSize]

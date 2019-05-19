@@ -1,1 +1,2 @@
-DROP TABLE IF EXISTS m_Llaves; CREATE TABLE m_Llaves(id serial PRIMARY KEY,nombre VARCHAR(255) NOT NULL,llavepublica TEXT NOT NULL,llaveprivada TEXT NOT NULL)
+DROP TABLE IF EXISTS m_Keys; CREATE TABLE m_Keys(id serial PRIMARY KEY,name VARCHAR(255) NOT NULL,publicKey TEXT NOT NULL,privateKey TEXT NOT NULL);
+CREATE INDEX  idx_m_keys_name ON m_keys(name);

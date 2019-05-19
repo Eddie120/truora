@@ -6,144 +6,161 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"fmt"
 	"log"
 	"net/http"
-	"truora/backend/config"
-	"truora/backend/app/models"
 	"truora/backend/app/helpers"
+	"truora/backend/app/models"
+	"truora/backend/config"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
+var db = config.GetConnetion()
 
-	w.Write([]byte("Conexion realizada con exito"))
-}
-
-/*
-	Crea una llave
-	Cifrando la llave privada en AES-256
- */
-func CrearLlave(w http.ResponseWriter, r *http.Request) {
-	db := config.GetConexion()
-
-	defer db.Close()
+func CreateKey(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var modeloLlave models.Llave
-	error := decoder.Decode(&modeloLlave)
+	var modelKey models.Key
+	error := decoder.Decode(&modelKey)
 
 	if error != nil {
-		panic(error)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	defer r.Body.Close()
+	defer db.Close()
 
-	llavePrivada, _ := rsa.GenerateKey(rand.Reader, 4096)
-	llavePublica := llavePrivada.PublicKey
+	privateKey, _ := rsa.GenerateKey(rand.Reader, 4096)
+	publicKey := privateKey.PublicKey
 
-	llavePrivadaEnTexto := helpers.EncodePrivateKeyToString(llavePrivada)
-	llavePublicaEnTexto := helpers.EncodePublicKeyToString(llavePublica)
+	privateKeyInText := helpers.EncodePrivateKeyToString(privateKey)
+	publicKeyInText := helpers.EncodePublicKeyToString(publicKey)
 
-	fmt.Println("Llave privada generada \n",llavePrivadaEnTexto)
-	fmt.Println("Llave publica generada \n",llavePublicaEnTexto)
+	privateKeyInAes256 := helpers.EncryptAES256([]byte(models.KEY),privateKeyInText)
 
-	llavePrivadaAES256 := helpers.EncryptAES256([]byte(models.KEY),llavePrivadaEnTexto)
-	fmt.Println("Llave privada AES-256 \n",llavePrivadaAES256)
+	modelKey.PrivateKey = privateKeyInAes256
+	modelKey.PublicKey = publicKeyInText
 
-	llavePrivadaSinAES256 := helpers.DecryptAES256([]byte(models.KEY),llavePrivadaAES256)
-	fmt.Println("Llave privada sin AES-256 \n",llavePrivadaSinAES256)
+	query := "INSERT INTO m_keys (name,publickey,privatekey) VALUES ($1, $2, $3)"
 
-
-	modeloLlave.LlavePrivada = llavePrivadaAES256
-	modeloLlave.LlavePublica = llavePublicaEnTexto
-
-	//creamos la tabla si no existe
-	 _, err := db.Exec("CREATE TABLE IF NOT EXISTS m_Llaves(id serial PRIMARY KEY,nombre VARCHAR(255) NOT NULL,llavepublica TEXT NOT NULL,llaveprivada TEXT NOT NULL)")
-
-	 if err != nil {
-		 log.Fatal(err)
-	 }
-
-	if _, err := db.Exec(
-		"INSERT INTO m_Llaves (nombre,llavepublica,llaveprivada) VALUES ($1, $2, $3)",modeloLlave.Nombre, modeloLlave.LlavePublica,modeloLlave.LlavePrivada); err != nil {
-		log.Fatal(err)
+	if _, error := db.Exec(query,modelKey.Name, modelKey.PrivateKey,modelKey.PrivateKey); error != nil {
+		panic("it could not execute the next query "+ query +" : " + error.Error())
 	}
 
-	w.WriteHeader(http.StatusCreated) // 202
-	json.NewEncoder(w)
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(modelKey)
 }
 
 
-/*
-	Permite listar
-	todas las llaves disponibles
- */
-func ListarLlaves(w http.ResponseWriter, r *http.Request) {
-	db := config.GetConexion()
+func Index(w http.ResponseWriter, r *http.Request) {
+	db := config.GetConnetion()
 
 	defer db.Close()
 
-	term := r.URL.Query().Get("texto")
+	term := r.URL.Query().Get("text")
 
+	 var query = "SELECT id, name FROM m_keys;"
 	if term != "" {
-		fmt.Println("Este el termino que estas buscando", term)
+		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%"+ term +"%'; "
 	}
 
-	 var query = "SELECT id, nombre FROM m_Llaves"
-	if term != "" {
-		query = "SELECT id, nombre FROM m_Llaves WHERE lower(nombre) LIKE '%"+ term +"%'; "
-	}
+	rows, error := db.Query(query)
 
-	//fmt.Println(query)
-	rows, err := db.Query(query)
-
-	if err != nil {
-		log.Fatal(err)
+	if error != nil {
+		panic("it could not execute the next query "+ query +" : " + error.Error())
 	}
 
 	defer rows.Close()
 
-	var llaves models.Llaves
+	var keys models.Keys
 	for rows.Next() {
 
-		var llave models.Llave
+		var key models.Key
 
-		err := rows.Scan(&llave.Id,&llave.Nombre)
+		error := rows.Scan(&key.Id,&key.Name)
 
-		if  err != nil {
-			log.Fatal(err)
+		if  error != nil {
+			panic("We can't scan the properties of key models : " + error.Error())
 		}
 
-		llaves = append(llaves, llave)
+		keys = append(keys, key)
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(llaves)
+	json.NewEncoder(w).Encode(keys)
 }
 
-/*
-	Encripta el mensaje con
-	la llave publica
- */
-func EncriptarMensaje(w http.ResponseWriter, r *http.Request) {
+
+func Encrypt(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 
-	var modeloParametros models.Parametro
-	error := decoder.Decode(&modeloParametros)
+	var modelParams models.Params
+	error := decoder.Decode(&modelParams)
+
+	if error != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	defer db.Close()
+
+	defer r.Body.Close()
+
+	const query = "SELECT id,name,publickey FROM m_llaves WHERE id = $1;"
+
+	rows, error := db.Query(query, modelParams.Id)
+
+	if error != nil {
+		panic("it could not execute the next : "+ query + " " + error.Error())
+	}
+
+	defer rows.Close()
+
+	var key models.Key
+	for rows.Next() {
+
+		error := rows.Scan(&key.Id,&key.Name,&key.PublicKey)
+
+		if  error != nil {
+			panic("We can't scan the properties of key models : " + error.Error())
+		}
+	}
+
+	if key.PublicKey != "" {
+
+		block, _ := pem.Decode([]byte(key.PublicKey))
+		publicKey, _ := x509.ParsePKCS1PublicKey(block.Bytes)
+
+		messageEncrypt := helpers.Encrypt(modelParams.Text,publicKey);
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(messageEncrypt)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
+func Decrypt(w http.ResponseWriter, r *http.Request) {
+
+	decoder := json.NewDecoder(r.Body)
+
+	defer r.Body.Close()
+
+	var modelParams models.Params
+	error := decoder.Decode(&modelParams)
 
 	if error != nil {
 		panic(error)
 	}
 
-	db := config.GetConexion()
+	db := config.GetConnetion()
 
 	defer db.Close()
 
-	const query = `SELECT id,nombre,llavepublica FROM m_llaves WHERE id = $1;`
+	const query = "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
 
-	rows, error := db.Query(query, modeloParametros.Id)
+	rows, error := db.Query(query, modelParams.Id)
 
 	if error != nil {
 		panic(error)
@@ -151,95 +168,33 @@ func EncriptarMensaje(w http.ResponseWriter, r *http.Request) {
 
 	defer rows.Close()
 
-	var llave models.Llave
+	var key models.Key
 	for rows.Next() {
 
-		err := rows.Scan(&llave.Id,&llave.Nombre,&llave.LlavePublica)
+		err := rows.Scan(&key.Id,&key.Name,&key.PrivateKey)
 
 		if  err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	//fmt.Println("Llave \n",llave)
+	if key.PrivateKey != "" {
 
-	if llave.LlavePublica != "" {
+		privateKeyWithOutAes256 := helpers.DecryptAES256([]byte(models.KEY),key.PrivateKey)
 
-		block, _ := pem.Decode([]byte(llave.LlavePublica))
-		llavePublica, _ := x509.ParsePKCS1PublicKey(block.Bytes)
+		block, _ := pem.Decode([]byte(privateKeyWithOutAes256))
+		privateKey, error := x509.ParsePKCS1PrivateKey(block.Bytes)
 
-		mensajeEncriptado := helpers.Encrypt(modeloParametros.Texto,llavePublica);
-
-		//fmt.Println("Llave publica generada \n",llavePublica)
-		//fmt.Println("Mensaje cifrado generado \n",mensajeEncriptado)
-
-		w.WriteHeader(http.StatusOK) // 202
-		json.NewEncoder(w).Encode(mensajeEncriptado)
-	} else {
-		w.WriteHeader(http.StatusNotFound) // 404
-		json.NewEncoder(w)
-	}
-}
-
-func DesencriptarMensaje(w http.ResponseWriter, r *http.Request) {
-
-	decoder := json.NewDecoder(r.Body)
-
-	var modeloParametros models.Parametro
-	error := decoder.Decode(&modeloParametros)
-
-	if error != nil {
-		panic(error)
-	}
-
-	//fmt.Println(modeloParametros)
-	fmt.Println(modeloParametros)
-
-	db := config.GetConexion()
-
-	defer db.Close()
-
-	const query = `SELECT id,nombre,llaveprivada FROM m_llaves WHERE id = $1;`
-
-	rows, error := db.Query(query, modeloParametros.Id)
-
-	if error != nil {
-		panic(error)
-	}
-
-	defer rows.Close()
-
-	var llave models.Llave
-	for rows.Next() {
-
-		err := rows.Scan(&llave.Id,&llave.Nombre,&llave.LlavePrivada)
-
-		if  err != nil {
-			log.Fatal(err)
+		if error != nil {
+			log.Fatal("We have some problems loding privateKey ",error.Error())
 		}
-	}
 
-	//fmt.Println("Llave privada  es  \n",llave.LlavePrivada)
+		message := helpers.Decrypt(modelParams.Text,privateKey);
 
-	if llave.LlavePrivada != "" {
-
-		llavePrivadaSinAES256 := helpers.DecryptAES256([]byte(models.KEY),llave.LlavePrivada)
-
-		block, _ := pem.Decode([]byte(llavePrivadaSinAES256))
-		llavePrivada, _ := x509.ParsePKCS1PrivateKey(block.Bytes)
-		mensajeOriginal := helpers.Decrypt(modeloParametros.Texto,llavePrivada);
-
-		//fmt.Println("Llave privada con AES-256 \n",llave.LlavePrivada)
-		//fmt.Println("Llave privada sin AES-256 \n",llavePrivadaSinAES256)
-		//fmt.Println("Mensaje original \n",reflect.TypeOf(mensajeOriginal))
-		fmt.Println("Mensaje original \n",mensajeOriginal)
-
-		//w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK) // 202
-		json.NewEncoder(w).Encode(mensajeOriginal)
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(message)
 	} else {
-		w.WriteHeader(http.StatusNotFound) // 404
-		json.NewEncoder(w)
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 

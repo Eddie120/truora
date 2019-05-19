@@ -17,23 +17,27 @@ export default new Vuex.Store({
       state.loading = loading
     },
     setError(state, data) {
-      if(data) {
-          state.error.status = true
-          state.error.module = data.modulo
-          if(!data.error.response){
+
+        if(! data) {
+            state.error.status = false
+            state.error.module = ''
+            state.error.message = ''
+
+            return
+        }
+
+        state.error.status = true
+        state.error.module = data.modulo
+        if(!data.error.response){
             state.error.message = "El servidor no responde, por favor intente mas tarde"
-          }else if(data.error.response.status === 401){
+        }else if(data.error.response.status === 401){
             state.error.message = "Las credenciales proporcionadas son incorrectas"
-          }else if(data.error.response.status === 500){
+        }else if(data.error.response.status === 500){
             state.error.message = "Error interno en el servidor"
-          } else {
+        } else {
             state.error.message = data.error.message
-          }
-      } else {        
-        state.error.status = false
-        state.error.module = ''
-        state.error.message = ''
-      }
+        }
+
     }
   },
   modules: {
