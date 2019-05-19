@@ -6,7 +6,7 @@ import (
 )
 
 
-func GetConnetion() (db *sql.DB) {
+func GetConnection() (db *sql.DB) {
 
 	db, err := sql.Open("postgres",  "postgresql://eddie@localhost:26257/bank?sslmode=disable")
 

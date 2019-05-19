@@ -13,7 +13,7 @@ import (
 	"truora/backend/config"
 )
 
-var db = config.GetConnetion()
+var db = config.GetConnection()
 
 func CreateKey(w http.ResponseWriter, r *http.Request) {
 
