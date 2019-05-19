@@ -22,9 +22,9 @@ func CreateKey(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	var modelKey models.Key
-	error := decoder.Decode(&modelKey)
+	err := decoder.Decode(&modelKey)
 
-	if error != nil {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -44,8 +44,8 @@ func CreateKey(w http.ResponseWriter, r *http.Request) {
 
 	query := "INSERT INTO m_keys (name,publickey,privatekey) VALUES ($1, $2, $3)"
 
-	if _, error := db.Exec(query,modelKey.Name, modelKey.PrivateKey,modelKey.PrivateKey); error != nil {
-		panic("it could not execute the next query "+ query +" : " + error.Error())
+	if _, err := db.Exec(query,modelKey.Name, modelKey.PrivateKey,modelKey.PrivateKey); err != nil {
+		panic("it could not execute the next query "+ query +" : " + err.Error())
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -64,10 +64,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%"+ term +"%'; "
 	}
 
-	rows, error := db.Query(query)
+	rows, err := db.Query(query)
 
-	if error != nil {
-		panic("it could not execute the next query "+ query +" : " + error.Error())
+	if err != nil {
+		panic("it could not execute the next query "+ query +" : " + err.Error())
 	}
 
 	defer rows.Close()
@@ -77,10 +77,10 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 		var key models.Key
 
-		error := rows.Scan(&key.Id,&key.Name)
+		err := rows.Scan(&key.Id,&key.Name)
 
-		if  error != nil {
-			panic("We can't scan the properties of key models : " + error.Error())
+		if  err != nil {
+			panic("We can't scan the properties of key models : " + err.Error())
 		}
 
 		keys = append(keys, key)
@@ -98,9 +98,9 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
 	var modelParams models.Params
-	error := decoder.Decode(&modelParams)
+	err := decoder.Decode(&modelParams)
 
-	if error != nil {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -109,10 +109,10 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 
 	const query = "SELECT id,name,publickey FROM m_llaves WHERE id = $1;"
 
-	rows, error := db.Query(query, modelParams.Id)
+	rows, err := db.Query(query, modelParams.Id)
 
-	if error != nil {
-		panic("it could not execute the next : "+ query + " " + error.Error())
+	if err != nil {
+		panic("it could not execute the next : "+ query + " " + err.Error())
 	}
 
 	defer rows.Close()
@@ -120,20 +120,20 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 	var key models.Key
 	for rows.Next() {
 
-		error := rows.Scan(&key.Id,&key.Name,&key.PublicKey)
+		err := rows.Scan(&key.Id,&key.Name,&key.PublicKey)
 
-		if  error != nil {
-			panic("We can't scan the properties of key models : " + error.Error())
+		if  err != nil {
+			panic("We can't scan the properties of key models : " + err.Error())
 		}
 	}
 
 	if key.PublicKey != "" {
 
 		block, _ := pem.Decode([]byte(key.PublicKey))
-		publicKey, error := x509.ParsePKCS1PublicKey(block.Bytes)
+		publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
 
-		if error != nil {
-			panic("it could not analize the public key" + error.Error())
+		if err != nil {
+			panic("it could not analize the public key" + err.Error())
 		}
 
 		messageEncrypt := helpers.Encrypt(modelParams.Text,publicKey);
@@ -154,19 +154,19 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var modelParams models.Params
-	error := decoder.Decode(&modelParams)
+	err := decoder.Decode(&modelParams)
 
-	if error != nil {
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	const query = "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
 
-	rows, error := db.Query(query, modelParams.Id)
+	rows, err := db.Query(query, modelParams.Id)
 
-	if error != nil {
-		panic("it could not execute the next query "+ query + " " + error.Error())
+	if err != nil {
+		panic("it could not execute the next query "+ query + " " + err.Error())
 	}
 
 	defer rows.Close()
@@ -174,10 +174,10 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 	var key models.Key
 	for rows.Next() {
 
-		error := rows.Scan(&key.Id,&key.Name,&key.PrivateKey)
+		err := rows.Scan(&key.Id,&key.Name,&key.PrivateKey)
 
-		if  error != nil {
-			panic("it could not scan properties of key model " + error.Error())
+		if  err != nil {
+			panic("it could not scan properties of key model " + err.Error())
 		}
 	}
 
@@ -186,10 +186,10 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 		privateKeyWithOutAes256 := helpers.DecryptAES256([]byte(models.KEY),key.PrivateKey)
 
 		block, _ := pem.Decode([]byte(privateKeyWithOutAes256))
-		privateKey, error := x509.ParsePKCS1PrivateKey(block.Bytes)
+		privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 
-		if error != nil {
-			log.Fatal("We have some problems loading privateKey ",error.Error())
+		if err != nil {
+			log.Fatal("We have some problems loading privateKey ",err.Error())
 		}
 
 		message := helpers.Decrypt(modelParams.Text,privateKey);

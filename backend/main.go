@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"truora/backend/routes"
 )
@@ -13,7 +12,7 @@ func main() {
 	err := http.ListenAndServe(":3000", r)
 
 	if err != nil {
-		log.Fatal(err)
+		panic("it could not listen TCP network " + err.Error())
 	}
 
 }
