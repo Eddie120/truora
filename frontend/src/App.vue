@@ -4,8 +4,8 @@
   	<b-container>
       <b-card>
         <b-nav justified tabs>
-          <b-nav-item exact to="/llaves">Listado de llaves</b-nav-item>
-          <b-nav-item exact to="/llaves/crear">Formulario para crear una llave</b-nav-item>
+          <b-nav-item exact to="/keys">Listado de llaves</b-nav-item>
+          <b-nav-item exact to="/keys/create">Formulario para crear una llave</b-nav-item>
         </b-nav>
 
 

@@ -1,17 +1,17 @@
 export default  [
     {
         path: '/',
-        redirect: '/llaves'
+        redirect: '/keys'
     },
     {
-        path: '/llaves',
-        name: 'listar-llaves',
-        component: () => import('./views/ListarLlaves')
+        path: '/keys',
+        name: 'keys',
+        component: () => import('./views/ListKeys')
     },
     {
-        path: '/llaves/crear',
-        name: 'crear-llave',
-        component: () => import('./views/CrearLlave.vue'),
+        path: '/keys/create',
+        name: 'create-key',
+        component: () => import('./views/CreateKey.vue'),
  
     },
 ]

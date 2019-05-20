@@ -1,14 +1,14 @@
 <template>
-    <div v-if="llaves.length">
+    <div v-if="keys.length">
 
     <b-card>
         <b-table
                 striped hover small
-                :items="llaves"
+                :items="keys"
                 :fields="fields">
 
             <template slot="actions" slot-scope="row">
-                <b-button size="sm" @click="ver(row.item, row.index, $event.target)" class="mr-1">
+                <b-button size="sm" @click="view(row.item, row.index, $event.target)" class="mr-1">
                     Ver
                 </b-button>
             </template>
@@ -21,20 +21,20 @@
                  ref="modal"
                  size="lg"
                  :title="infoModal.title"
-                 ok-only @hide="limipiarModal(5)"
-                 @show="limipiarModal(5)">
+                 ok-only @hide="resetModal(5)"
+                 @show="resetModal(5)">
 
             <b-row>
                 <b-col cols="12">
 
-                    <form ref="formEncrypt" @submit.stop.prevent="handleSubmitEncrypt" @reset="limipiarModal(1)">
+                    <form ref="formEncrypt" @submit.stop.prevent="handleSubmitEncrypt" @reset="resetModal(1)">
                         <b-form-group
-                                label="Texto"
+                                label="Text"
                                 label-for="name-input"
-                                invalid-feedback="El texto es requerido">
+                                invalid-feedback="Text required">
                             <b-form-input
                                     id="name-input"
-                                    v-model="_encriptar.texto"
+                                    v-model="_encrypt.text"
                                     :state="nameStateformEncrypt"
                                     required
                                     :aucomplete="false">
@@ -44,7 +44,7 @@
 
                         <b-form-textarea
                                 id="textarea-no-resize"
-                                v-model="_encriptar.salidaTextoEncriptado"
+                                v-model="_encrypt.encryptedText"
                                 rows="10"
                                 no-resize
                                 :readonly="true"
@@ -55,8 +55,8 @@
                         <b-row>
                             <b-col cols="4"></b-col>
                             <b-col cols="4">
-                                <b-button  type="submit" class="mt-2 mr-4" variant="success">Encriptar</b-button>
-                                <b-button  type="reset" class="mt-2" variant="secondary">Limpiar</b-button>
+                                <b-button  type="submit" class="mt-2 mr-4" variant="success">Encrypt</b-button>
+                                <b-button  type="reset" class="mt-2" variant="secondary">Reset</b-button>
                             </b-col>
                             <b-col cols="4"></b-col>
                         </b-row>
@@ -69,10 +69,10 @@
             <b-row class="mt-5">
                 <b-col cols="12">
 
-                    <form ref="formDecrypt" @submit.stop.prevent="handleSubmitDecrypt" @reset="limipiarModal(2)">
+                    <form ref="formDecrypt" @submit.stop.prevent="handleSubmitDecrypt" @reset="resetModal(2)">
 
                         <b-form-textarea
-                                v-model="_desencriptar.texto"
+                                v-model="_decrypt.text"
                                 rows="10"
                                 no-resize
                                 :state="nameStateformDecrypt"
@@ -82,11 +82,11 @@
                         </b-form-textarea>
 
                         <b-form-group
-                                label="Texto original"
+                                label="Original Text"
                                 label-for="name-input"
-                                invalid-feedback="Texto original">
+                                invalid-feedback="Original Text">
                             <b-form-input
-                                    v-model="_desencriptar.textoOriginal"
+                                    v-model="_decrypt.originalText"
                                     :readonly="true"
                                     :aucomplete="false">
 
@@ -97,8 +97,8 @@
                         <b-row>
                             <b-col cols="4"></b-col>
                             <b-col cols="4">
-                                <b-button  type="submit"  class="mt-2 mr-4" variant="danger">Desencriptar</b-button>
-                                <b-button  type="reset" class="mt-2" variant="secondary">Limpiar</b-button>
+                                <b-button  type="submit"  class="mt-2 mr-4" variant="danger">Decrypt</b-button>
+                                <b-button  type="reset" class="mt-2" variant="secondary">Reset</b-button>
                             </b-col>
                             <b-col cols="4"></b-col>
                         </b-row>
@@ -112,7 +112,7 @@
         </b-modal>
 
     </div>
-    <b-alert v-else variant="info" show>No hay llaves disponibles</b-alert>
+    <b-alert v-else variant="info" show>No keys available</b-alert>
 </template>
 
 <script>
@@ -121,7 +121,7 @@
         components: {
         },
         props: {
-            llaves: {
+            keys: {
                 type: Array,
                 required: true
             }
@@ -130,7 +130,7 @@
             return {
                 fields: [
                   { key: 'id', label: 'Id', sortable: true ,class: 'text-center'},
-                  { key: 'nombre', label: 'Nombre de la llave', sortable: true, class: 'text-center'},
+                  { key: 'name', label: 'Nombre', sortable: true, class: 'text-center'},
                   { key: 'actions', label: 'Opción', sortable: false ,class: 'text-center' }
                 ],
                 infoModal: {
@@ -143,38 +143,48 @@
             }
         },
         computed: {
-            ...mapState('KeyPairModule',['_encriptar', '_desencriptar']),
+            ...mapState('KeyPairModule',['_encrypt', '_decrypt']),
         },
         methods: {
-            ...mapActions('KeyPairModule',['encriptar', 'desencriptar', '_limpiarFormularioEncriptar', '_limpiarFormularioDesencriptar', '_setLlave', 'cargarLlaves']),
-            ver(item, index, button) {
-                this.limipiarModal(5)
-                this.infoModal.title = item.nombre
+            ...mapActions('KeyPairModule',['encrypt', 'decrypt', '_resetFormEncrypt', '_resetFormDecrypt', '_setKey']),
+            view(item, index, button) {
 
-                this._setLlave(item.id)
+                this.resetModal(5)
+                this.infoModal.title = item.name
+
+                this._setKey(item.id)
                 this.$root.$emit('bv::show::modal', this.infoModal.id, button)
             },
-            limipiarModal(tipoLimpieza) {
+            resetModal(type) {
 
-                switch (tipoLimpieza) {
-                    case 5: // limpiar todo el formulario
+                switch (type) {
+                    case 5:
+
                         this.$refs.formEncrypt.reset()
                         this.$refs.formDecrypt.reset()
 
-                        this._limpiarFormularioEncriptar()
-                        this._limpiarFormularioDesencriptar()
+                        this._resetFormEncrypt()
+                        this._resetFormDecrypt()
+
                         this.nameStateformEncrypt = null
                         this.nameStateformDecrypt = null
+
                         break;
-                    case 1: // limpiar formulario para encriptar
+                    case 1:
+
                         this.$refs.formEncrypt.reset()
-                        this._limpiarFormularioEncriptar()
+                        this._resetFormEncrypt()
+
                         this.nameStateformEncrypt = null
+
                         break;
-                    case 2: // limpiar formulario pasa desencriptar
+                    case 2:
+
                         this.$refs.formDecrypt.reset()
-                        this._limpiarFormularioDesencriptar()
+                        this._resetFormDecrypt()
+
                         this.nameStateformDecrypt = null
+
                         break;
                 }
 
@@ -186,16 +196,21 @@
                     return
                 }
 
-               await this.encriptar(this._encriptar)
+               await this.encrypt(this._encrypt)
             },
-            checkFormValidity(tipo) {
+            checkFormValidity(type) {
+
                 let valid = null
-                if(tipo == 1) {
+                if(type == 1) {
+
                     valid = this.$refs.formEncrypt.checkValidity()
                     this.nameStateformEncrypt = valid ? 'valid' : 'invalid'
-                } else if( tipo == 2) {
+
+                } else if( type == 2) {
+
                     valid = this.$refs.formDecrypt.checkValidity()
                     this.nameStateformDecrypt = valid ? 'valid' : 'invalid'
+
                 }
 
                 return valid
@@ -204,7 +219,7 @@
                 if (!this.checkFormValidity(2)) {
                     return
                 }
-               await this.desencriptar(this._desencriptar)
+               await this.decrypt(this._decrypt)
             },
         }
     }

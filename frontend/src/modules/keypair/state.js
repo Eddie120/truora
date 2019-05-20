@@ -1,14 +1,14 @@
 export default {
-    llaves: [],
-    llave: null,
-    _encriptar: {
+    keys: [],
+    key: null,
+    _encrypt: {
         id: '',
-        texto: '',
-        salidaTextoEncriptado: '',
+        text: '',
+        encryptedText: '',
     },
-    _desencriptar: {
+    _decrypt: {
         id: '',
-        texto: '',
-        textoOriginal: ''
+        text: '',
+        originalText: ''
     },
 }

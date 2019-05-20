@@ -19,10 +19,10 @@ func EncodePrivateKeyToString(key *rsa.PrivateKey) string {
 	err := key.Validate()
 
 	if err != nil {
-		panic("We can not validate private key "+ err.Error())
+		panic("We can not validate private key " + err.Error())
 	}
 
-	 privateKey := &pem.Block{
+	privateKey := &pem.Block{
 		Type:  "PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(key),
 	}
@@ -49,9 +49,8 @@ func EncodePublicKeyToString(pubkey rsa.PublicKey) string {
 	return publicKeyString
 }
 
-
-func Encrypt(message string, publicKey *rsa.PublicKey) (string) {
-	messageEncrypted, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(message),nil)
+func Encrypt(message string, publicKey *rsa.PublicKey) string {
+	messageEncrypted, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(message), nil)
 
 	if err != nil {
 		panic("We can not encrypt message with the public key " + err.Error())
@@ -60,14 +59,14 @@ func Encrypt(message string, publicKey *rsa.PublicKey) (string) {
 	return base64.StdEncoding.EncodeToString(messageEncrypted)
 }
 
-func Decrypt(messageEncrypt string, privateKey *rsa.PrivateKey) (string) {
+func Decrypt(messageEncrypt string, privateKey *rsa.PrivateKey) string {
 	messageEncrypted, err := base64.StdEncoding.DecodeString(messageEncrypt)
 
 	if err != nil {
 		panic("We can not decode the message with base64 " + err.Error())
 	}
 
-	messageDecrypted, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, messageEncrypted,nil)
+	messageDecrypted, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, messageEncrypted, nil)
 
 	if err != nil {
 		panic("We can not decrypt the message " + err.Error())
@@ -89,7 +88,7 @@ func EncryptAES256(key []byte, privateKey string) string {
 	iv := ciphertext[:aes.BlockSize]
 
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic("We could not read all bytes "+ err.Error())
+		panic("We could not read all bytes " + err.Error())
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
@@ -102,7 +101,7 @@ func DecryptAES256(key []byte, privateKey string) string {
 	cipherPrivateKey, err := base64.URLEncoding.DecodeString(privateKey)
 
 	if err != nil {
-		panic("We could not read all bytes "+ err.Error())
+		panic("We could not read all bytes " + err.Error())
 	}
 
 	block, err := aes.NewCipher(key)

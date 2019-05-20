@@ -1,31 +1,31 @@
-export function setLlaves (state, llaves) {
-    state.llaves = llaves
+export function setKeys (state, keys) {
+    state.keys = keys
 }
 
-export function setLlave (state, llave) {
-    state.llave = llave
+export function setKey (state, key) {
+    state.key = key
 }
 
-export function setSalidaTextoEncriptado (state, textoEncriptado) {
-    state._encriptar.salidaTextoEncriptado = textoEncriptado
+export function setEncryptedText (state, encryptedText) {
+    state._encrypt.encryptedText = encryptedText
 }
 
-export function setSalidaTextoOrigininal (state, textoOriginal) {
-    state._desencriptar.textoOriginal = textoOriginal
+export function setOriginalText (state, originalText) {
+    state._decrypt.originalText = originalText
 }
 
-export function limpiarFormularioEncriptar(state) {
-    state._encriptar.texto = ''
-    state._encriptar.salidaTextoEncriptado = ''
+export function resetFormEncrypt(state) {
+    state._encrypt.text = ''
+    state._encrypt.encryptedText = ''
 }
 
 
-export function limpiarFormularioDesencriptar(state) {
-    state._desencriptar.texto = ''
-    state._desencriptar.textoOriginal = ''
+export function resetFormDecrypt(state) {
+    state._decrypt.text = ''
+    state._decrypt.originalText = ''
 }
 
-export function setIdLlave(state, id) {
-    state._encriptar.id = id
-    state._desencriptar.id = id
+export function setIdKey(state, id) {
+    state._encrypt.id = id
+    state._decrypt.id = id
 }

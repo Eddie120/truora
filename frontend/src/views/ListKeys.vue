@@ -7,14 +7,14 @@
                     <b-form-group class="mb-4">
 
                         <b-input-group>
-                            <b-form-input v-model="filter" v-on:change="buscar" placeholder="Buscar ..."></b-form-input>
+                            <b-form-input v-model="filter" v-on:change="search" placeholder="Buscar ..."></b-form-input>
                             <b-input-group-append>
-                                <b-button :disabled="!filter" @click="filter = ''">Limpiar</b-button>
+                                <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
                             </b-input-group-append>
                         </b-input-group>
 
                     </b-form-group>
-                    <ListarLlaves v-if="llaves" :llaves="llaves"></ListarLlaves>
+                    <ListKeys v-if="keys" :keys="keys"></ListKeys>
                     <b-alert v-else variant="info" show>No hay llaves disponibles</b-alert>
                 </b-col>
                 <b-col cols="1"></b-col>
@@ -25,10 +25,10 @@
 
 <script>
     import { mapActions, mapState } from 'vuex'
-    import ListarLlaves from '../components/ListarLlaves'
+    import ListKeys from '../components/ListKeys'
     export default {
         components: {
-            ListarLlaves
+            ListKeys
         },
         data() {
             return {
@@ -36,20 +36,20 @@
             }
         },
         computed: {
-            ...mapState('KeyPairModule',['llaves']),
+            ...mapState('KeyPairModule',['keys']),
         },
         methods: {
-            ...mapActions('KeyPairModule',['cargarLlaves']),
-            buscar() {
+            ...mapActions('KeyPairModule',['loadKeys']),
+            search() {
                 if(this.filter.length >= 3) {
-                    this.cargarLlaves(this.filter)
+                    this.loadKeys(this.filter)
                 } else if(this.filter.length < 3) {
-                    this.cargarLlaves()
+                    this.loadKeys()
                 }
             }
         },
         async mounted() {
-           await this.cargarLlaves()
+           await this.loadKeys()
         },
     }
 </script>

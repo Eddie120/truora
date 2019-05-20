@@ -1,20 +1,20 @@
 import Vue from 'vue'
 
-export async function cargarLlaves({commit}, term = null) {
+export async function loadKeys({commit}, term = null) {
     try {
         commit('setError', false, {root: true})
         commit('setLoading', true, {root: true})
 
-        let url = '/llaves'
+        let url = '/keys'
         if(term != null) {
-            url = '/llaves?texto='+term
+            url = '/keys?text='+term
         }
 
         const {data} = await Vue.axios({
             url: url
         })
 
-        commit('setLlaves', data)
+        commit('setKeys', data)
     } catch (error) {
         commit('setError', {modulo: 'Key Pair', error}, {root: true})
     }finally{
@@ -23,18 +23,15 @@ export async function cargarLlaves({commit}, term = null) {
 }
 
 
-export async function crearLlave({commit}, llave) {
+export async function create({commit}, key) {
     try {
         commit('setError', false, {root: true})
         commit('setLoading', true, {root: true})
-        const respuesta = await Vue.axios({
+        const response = await Vue.axios({
             method: 'POST',
-            url: '/llave',
-            data: llave
+            url: '/key',
+            data: key
         })
-         if(respuesta) {
-            console.log("LLave creada con exito")
-        }
     } catch (error) {
         commit('setError', {modulo: 'Key Pair', error}, {root: true})
     }finally{
@@ -42,18 +39,17 @@ export async function crearLlave({commit}, llave) {
     }
 }
 
-export async function encriptar({commit}, content) {
+export async function encrypt({commit}, content) {
     try {
         commit('setError', false, {root: true})
         commit('setLoading', true, {root: true})
         const respuesta = await Vue.axios({
             method: 'POST',
-            url: '/llave/encriptar',
+            url: '/key/encrypt',
             data: content
         })
         if(respuesta) {
-            console.log(respuesta)
-            commit('setSalidaTextoEncriptado', respuesta.data)
+            commit('setEncryptedText', respuesta.data)
         }
     } catch (error) {
         commit('setError', {modulo: 'Key Pair', error}, {root: true})
@@ -62,18 +58,17 @@ export async function encriptar({commit}, content) {
     }
 }
 
-export async function desencriptar({commit}, content) {
+export async function decrypt({commit}, content) {
     try {
         commit('setError', false, {root: true})
         commit('setLoading', true, {root: true})
         const respuesta = await Vue.axios({
             method: 'POST',
-            url: '/llave/desencriptar',
+            url: '/key/decrypt',
             data: content
         })
         if(respuesta) {
-            console.log(respuesta)
-            commit('setSalidaTextoOrigininal', respuesta.data)
+            commit('setOriginalText', respuesta.data)
         }
     } catch (error) {
         commit('setError', {modulo: 'Key Pair', error}, {root: true})
@@ -82,14 +77,14 @@ export async function desencriptar({commit}, content) {
     }
 }
 
-export function _limpiarFormularioEncriptar({commit}) {
-    commit('limpiarFormularioEncriptar')
+export function _resetFormEncrypt({commit}) {
+    commit('resetFormEncrypt')
 }
 
-export function _limpiarFormularioDesencriptar({commit}) {
-    commit('limpiarFormularioDesencriptar')
+export function _resetFormDecrypt({commit}) {
+    commit('resetFormDecrypt')
 }
 
-export function _setLlave({commit}, idLlave) {
-    commit('setIdLlave', idLlave)
+export function _setKey({commit}, idkey) {
+    commit('setIdKey', idkey)
 }

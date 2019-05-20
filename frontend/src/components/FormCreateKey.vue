@@ -4,23 +4,24 @@
 
 			 <b-form-group
 			        id="input-group-1"
-			        label="Nombre Llave:"
+			        label="Nombre:"
 			        label-for="input-1"
 			        description="Como se va identificar la key pair generada por el sistema">
 
 		     <b-form-input
 		          id="input-1"
 		          type="text"
-		          v-model="llave.nombre"
-		          v-validate="'required|min:4'" name="NombreLLave"
+		          v-model="_key.name"
+		          v-validate="'required|min:4'"
+                  name="Nombre"
 		          placeholder="Ingrese el nombre de la llave"
 		        ></b-form-input>
-		        <i v-show="errors.has('NombreLLave')" class="fa fa-warning"></i>
-                <span v-show="errors.has('NombreLLave')" class="help is-danger">{{ errors.first('NombreLLave') }}</span>
+		        <i v-show="errors.has('Nombre')" class="fa fa-warning"></i>
+                <span v-show="errors.has('Nombre')" class="help is-danger text-danger">{{ errors.first('Nombre') }}</span>
 
       		</b-form-group>
 
-      		<b-button type="submit" variant="primary">{{ texto }}</b-button>
+      		<b-button type="submit" variant="primary">{{ text }}</b-button>
 			</b-form>
 		</div>
 </template>
@@ -28,16 +29,16 @@
  	import { mapActions, mapState } from 'vuex'
 	export default {
 		props: {
-			texto: {
+			text: {
 				type: String,
 				required: true,
 				default: "Crear"
 			},
-			llave: {
+            _key: {
 				type: Object,
 				required: true
 			},
-			accion: {
+			action: {
 				type: Boolean,
 				required: true	
 			}
@@ -46,26 +47,25 @@
 			...mapState(['error']),
 		},
 		methods: {
-		...mapActions('KeyPairModule',['crearLlave']),	
+		...mapActions('KeyPairModule',['create']),
 	    async onSubmit() {
 	      const result = await this.$validator.validateAll()
 	      if(! result) {
 	      	return
 	      } else {
-	      	 // Con esta prop sabemos si la accion es para crear ó actualizar
-            if(! this.accion) { // false
-                await this.crearLlave(this.llave)
+
+            if(! this.action) {
+                await this.create(this._key)
             }
 
             if(! this.error.status) {
-                this.$router.push('/llaves')
+                this.$router.push('/keys')
              } else {
-            	// si pasa algun error durante la creacion ó actualización de la llave
 				console.log("Paso un error durante la peticion "+ this.error.message)
              }
 	      }
 	    }
-     }
+     },
 	}
 </script>
 <style scope>

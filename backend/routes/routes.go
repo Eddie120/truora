@@ -20,7 +20,7 @@ func LoadRoutes() *chi.Mux {
 	r := chi.NewRouter()
 
 	cors := cors.New(cors.Options {
-		AllowedOrigins:   []string{"http://localhost:8081/"},
+		AllowedOrigins:   []string{"http://localhost:8081"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 	})
 
