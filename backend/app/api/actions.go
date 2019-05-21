@@ -55,7 +55,7 @@ func CreateKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(modelKey)
+	_ = json.NewEncoder(w).Encode(modelKey)
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +91,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(keys)
+	_ = json.NewEncoder(w).Encode(keys)
 }
 
 func Encrypt(w http.ResponseWriter, r *http.Request) {
@@ -139,7 +139,7 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 		messageEncrypt := helpers.Encrypt(modelParams.Text, publicKey)
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(messageEncrypt)
+		_ = json.NewEncoder(w).Encode(messageEncrypt)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
@@ -193,7 +193,7 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 		message := helpers.Decrypt(modelParams.Text, privateKey)
 
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(message)
+		_ = json.NewEncoder(w).Encode(message)
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 	}
