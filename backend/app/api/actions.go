@@ -70,11 +70,11 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		rows, err =  db.Query(query, term)
 	}
 
+	defer rows.Close()
+
 	if err != nil {
 		panic("it could not execute the next query " + query + " : " + err.Error())
 	}
-
-	defer rows.Close()
 
 	var keys models.Keys
 	for rows.Next() {
@@ -107,15 +107,15 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	 query := "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
+	query := "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
 
 	rows, err = db.Query(query, modelParams.Id)
+	defer rows.Close()
 
 	if err != nil {
 		panic("it could not execute the next : " + query + " " + err.Error())
 	}
 
-	defer rows.Close()
 
 	var key models.Key
 	for rows.Next() {
@@ -162,12 +162,12 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 	 query := "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
 
 	rows, err = db.Query(query, modelParams.Id)
+	defer rows.Close()
 
 	if err != nil {
 		panic("it could not execute the next query " + query + " " + err.Error())
 	}
 
-	defer rows.Close()
 
 	var key models.Key
 	for rows.Next() {
