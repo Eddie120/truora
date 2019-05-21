@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"database/sql"
 	"encoding/json"
 	"encoding/pem"
 	"net/http"
@@ -12,11 +13,18 @@ import (
 	"truora/backend/config"
 )
 
-var db = config.GetConnection()
+
+var (
+	db = config.GetConnection()
+	err error
+	rows *sql.Rows
+)
+
 
 func CreateKey(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 
 	var modelKey models.Key
 	err := decoder.Decode(&modelKey)
@@ -26,7 +34,6 @@ func CreateKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
 
 	privateKey, _ := rsa.GenerateKey(rand.Reader, 4096)
 	publicKey := privateKey.PublicKey
@@ -53,12 +60,13 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	term := r.URL.Query().Get("text")
 
-	var query = "SELECT id, name FROM m_keys;"
-	if term != "" {
-		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%" + term + "%'; "
-	}
+	query := "SELECT id, name FROM m_keys;"
+	rows, err =  db.Query(query)
 
-	rows, err := db.Query(query)
+	if term != "" {
+		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%' || $1 || '%' "
+		rows, err =  db.Query(query, term)
+	}
 
 	if err != nil {
 		panic("it could not execute the next query " + query + " : " + err.Error())
@@ -87,6 +95,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 func Encrypt(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 
 	var modelParams models.Params
 	err := decoder.Decode(&modelParams)
@@ -96,9 +105,7 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer r.Body.Close()
-
-	const query = "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
+	 query := "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
 
 	rows, err := db.Query(query, modelParams.Id)
 
@@ -150,7 +157,7 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const query = "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
+	 query := "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
 
 	rows, err := db.Query(query, modelParams.Id)
 
