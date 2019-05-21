@@ -13,6 +13,8 @@
                 </b-button>
             </template>
         </b-table>
+        <!-- Pagination -->
+        <Pagination></Pagination>
     </b-card>
 
 
@@ -112,13 +114,15 @@
         </b-modal>
 
     </div>
-    <b-alert v-else variant="info" show>No keys available</b-alert>
+    <b-alert v-else variant="info" show>No hay llaves disponibles</b-alert>
 </template>
 
 <script>
     import { mapActions, mapState } from 'vuex'
+    import Pagination from '../components/Pagination'
     export default {
         components: {
+            Pagination
         },
         props: {
             keys: {

@@ -1,13 +1,13 @@
 import Vue from 'vue'
 
-export async function loadKeys({commit}, term = null) {
+export async function loadKeys({commit}, params) {
     try {
         commit('setError', false, {root: true})
         commit('setLoading', true, {root: true})
 
-        let url = '/keys'
-        if(term != null) {
-            url = '/keys?text='+term
+       let url = '/keys?perPage=' + params.perPage
+        if(params.filter != '') {
+            url += '&text='+params.filter
         }
 
         const {data} = await Vue.axios({

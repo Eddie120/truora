@@ -61,13 +61,15 @@ func CreateKey(w http.ResponseWriter, r *http.Request) {
 func Index(w http.ResponseWriter, r *http.Request) {
 
 	term := r.URL.Query().Get("text")
+	perPage := r.URL.Query().Get("perPage")
+	//lastId := chi.URLParam(r, "lastId")
 
-	query := "SELECT id, name FROM m_keys ORDER BY id ASC"
-	rows, err =  db.Query(query)
+	query := "SELECT id, name FROM m_keys ORDER BY id ASC LIMIT $1"
+	rows, err =  db.Query(query, perPage)
 
 	if term != "" {
-		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%' || $1 || '%' ORDER BY id ASC"
-		rows, err =  db.Query(query, term)
+		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%' || $1 || '%' ORDER BY id ASC LIMIT $2 "
+		rows, err =  db.Query(query, term, perPage)
 	}
 
 	defer rows.Close()
