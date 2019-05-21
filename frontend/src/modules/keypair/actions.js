@@ -88,3 +88,11 @@ export function _resetFormDecrypt({commit}) {
 export function _setKey({commit}, idkey) {
     commit('setIdKey', idkey)
 }
+
+export function _setFirstId({commit}, id) {
+    commit('setFirstId', id)
+}
+
+export function _setLastId({commit}, id) {
+    commit('setLastId', id)
+}

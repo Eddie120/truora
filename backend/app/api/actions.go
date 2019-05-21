@@ -62,7 +62,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	term := r.URL.Query().Get("text")
 	perPage := r.URL.Query().Get("perPage")
-	//lastId := chi.URLParam(r, "lastId")
 
 	query := "SELECT id, name FROM m_keys ORDER BY id ASC LIMIT $1"
 	rows, err =  db.Query(query, perPage)

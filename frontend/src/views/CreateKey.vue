@@ -17,7 +17,7 @@
    </template>
 
 <script>
-    import FormCreateKey from '../components/FormCreateKey'
+    import FormCreateKey from '../components/CreateKeyForm'
     export default {
         components: {
             FormCreateKey

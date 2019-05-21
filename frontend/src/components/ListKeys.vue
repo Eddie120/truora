@@ -1,22 +1,25 @@
 <template>
-    <div v-if="keys.length">
 
-    <b-card>
-        <b-table
-                striped hover small
-                :items="keys"
-                :fields="fields">
+    <div>
 
-            <template slot="actions" slot-scope="row">
-                <b-button size="sm" @click="view(row.item, row.index, $event.target)" class="mr-1">
-                    Ver
-                </b-button>
-            </template>
-        </b-table>
-        <!-- Pagination -->
-        <Pagination></Pagination>
-    </b-card>
+        <b-card>
+            <b-table
+                    striped hover small
+                    :items="keys"
+                    :fields="fields">
 
+                <template slot="actions" slot-scope="row">
+                    <b-button size="sm" @click="view(row.item, row.index, $event.target)" class="mr-1">
+                        Ver
+                    </b-button>
+                </template>
+            </b-table>
+            <!-- Pagination -->
+            <Pagination :keys="keys"
+                        :params="params">
+
+            </Pagination>
+        </b-card>
 
         <!-- modal -->
         <b-modal :id="infoModal.id"
@@ -114,7 +117,7 @@
         </b-modal>
 
     </div>
-    <b-alert v-else variant="info" show>No hay llaves disponibles</b-alert>
+
 </template>
 
 <script>
@@ -127,6 +130,10 @@
         props: {
             keys: {
                 type: Array,
+                required: true
+            },
+            params: {
+                type: Object,
                 required: true
             }
         },

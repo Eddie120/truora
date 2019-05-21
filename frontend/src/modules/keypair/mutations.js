@@ -29,3 +29,11 @@ export function setIdKey(state, id) {
     state._encrypt.id = id
     state._decrypt.id = id
 }
+
+export function setFirstId(state, id) {
+    state.firstId = id
+}
+
+export function setLastId(state, id) {
+    state.lastId = id
+}

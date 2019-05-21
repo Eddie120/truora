@@ -23,7 +23,10 @@
                         </b-col>
                     </b-row>
 
-                    <ListKeys v-if="keys" :keys="keys"></ListKeys>
+                    <ListKeys v-if="keys.length"
+                              :keys="keys"
+                              :params="params"></ListKeys>
+
                     <b-alert v-else variant="info" show>No hay llaves disponibles</b-alert>
                 </b-col>
                 <b-col cols="1"></b-col>

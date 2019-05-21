@@ -1,6 +1,8 @@
 export default {
     keys: [],
     key: null,
+    firstId: null,
+    lastId: null,
     _encrypt: {
         id: '',
         text: '',
