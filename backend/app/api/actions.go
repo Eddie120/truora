@@ -62,11 +62,11 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	term := r.URL.Query().Get("text")
 
-	query := "SELECT id, name FROM m_keys;"
+	query := "SELECT id, name FROM m_keys ORDER BY id ASC"
 	rows, err =  db.Query(query)
 
 	if term != "" {
-		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%' || $1 || '%' "
+		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%' || $1 || '%' ORDER BY id ASC"
 		rows, err =  db.Query(query, term)
 	}
 
@@ -109,23 +109,13 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 
 	query := "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
 
-	rows, err = db.Query(query, modelParams.Id)
-	defer rows.Close()
+	var key models.Key
+	err = db.QueryRow(query, modelParams.Id).Scan(&key.Id, &key.Name, &key.PublicKey)
 
 	if err != nil {
 		panic("it could not execute the next : " + query + " " + err.Error())
 	}
 
-
-	var key models.Key
-	for rows.Next() {
-
-		err = rows.Scan(&key.Id, &key.Name, &key.PublicKey)
-
-		if err != nil {
-			panic("We can't scan the properties of key models : " + err.Error())
-		}
-	}
 
 	if key.PublicKey != "" {
 
@@ -159,24 +149,13 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	 query := "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
+	query := "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
 
-	rows, err = db.Query(query, modelParams.Id)
-	defer rows.Close()
+	var key models.Key
+	err = db.QueryRow(query, modelParams.Id).Scan(&key.Id, &key.Name, &key.PrivateKey)
 
 	if err != nil {
 		panic("it could not execute the next query " + query + " " + err.Error())
-	}
-
-
-	var key models.Key
-	for rows.Next() {
-
-		err := rows.Scan(&key.Id, &key.Name, &key.PrivateKey)
-
-		if err != nil {
-			panic("it could not scan properties of key model " + err.Error())
-		}
 	}
 
 	if key.PrivateKey != "" {
