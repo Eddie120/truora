@@ -14,7 +14,9 @@
 </template>
 
 <script>
-    import { mapActions, mapState } from 'vuex'
+    import {mapActions, mapState} from 'vuex'
+    import Mixin from '../mixins/mixin'
+
     export default {
         props: {
             keys: {
@@ -26,31 +28,46 @@
                 required: true
             }
         },
-        data() {
-            return {
-
-            }
-        },
+        mixins: [Mixin],
         computed: {
-            ...mapState('KeyPairModule',['firstId', 'lastId']),
+            ...mapState('KeyPairModule', ['firstId', 'lastId']),
         },
         methods: {
-            ...mapActions('KeyPairModule',['_setFirstId', '_setLastId']),
-            previous() {
-                console.log("antes")
+            ...mapActions('KeyPairModule', ['loadKeys', '_setFirstId', '_setLastId']),
+            async previous() {
+
+                const params = this.filterParams("previous")
+                await this.loadKeys(params)
+
+                const array = this.getIdsKeys(this.keys)
+
+                this._setFirstId(array[0])
+                this._setLastId(array[1])
             },
-            next() {
-                console.log("despues")
+            async next() {
+
+                const params = this.filterParams("next")
+                await this.loadKeys(params)
+
+                const array = this.getIdsKeys(this.keys)
+
+                this._setFirstId(array[0])
+                this._setLastId(array[1])
+            },
+            filterParams(type) {
+
+                let params = {}
+                params.filter = this.params.filter
+                params.perPage = this.params.perPage
+
+                if(type == "previous") {
+                    params.firstId = this.firstId
+                } else {
+                    params.lastId = this.lastId
+                }
+
+                return params
             }
-        },
-        mounted() {
-            const length = this.keys.length
-
-            const firstId = this.keys[0].id
-            const lastId = this.keys[  length - 1  ].id
-
-            this._setFirstId(firstId)
-            this._setLastId(lastId)
         }
     }
 </script>

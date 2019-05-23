@@ -38,10 +38,12 @@
 <script>
     import { mapActions, mapState } from 'vuex'
     import ListKeys from '../components/ListKeys'
+    import Mixin from '../mixins/mixin'
     export default {
         components: {
             ListKeys
         },
+        mixins: [Mixin],
         data() {
             return {
                 params: {
@@ -55,18 +57,27 @@
             ...mapState('KeyPairModule',['keys']),
         },
         methods: {
-            ...mapActions('KeyPairModule',['loadKeys']),
-            search() {
+            ...mapActions('KeyPairModule',['loadKeys', '_setFirstId', '_setLastId']),
+           async search() {
 
                 if(this.params.filter.length >= 3) {
-                    this.loadKeys(this.params)
-                } else if(this.params.filter.length == 0) {
-                    this.loadKeys(this.params)
+                    await this.loadKeys(this.params)
+                } else if(this.params.filter.length === 0) {
+                    await this.loadKeys(this.params)
                 }
+
+                const array = this.getIdsKeys(this.keys)
+
+                this._setFirstId(array[0])
+                this._setLastId(array[1])
             }
         },
         async mounted() {
             await this.loadKeys(this.params)
+            const array = this.getIdsKeys(this.keys)
+
+            this._setFirstId(array[0])
+            this._setLastId(array[1])
         },
     }
 </script>

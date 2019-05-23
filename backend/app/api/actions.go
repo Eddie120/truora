@@ -20,6 +20,8 @@ var (
 	rows *sql.Rows
 	publicKey *rsa.PublicKey
 	privateKey *rsa.PrivateKey
+	query string
+	where string
 )
 
 
@@ -48,7 +50,7 @@ func CreateKey(w http.ResponseWriter, r *http.Request) {
 	modelKey.PrivateKey = privateKeyInAes256
 	modelKey.PublicKey = publicKeyInText
 
-	query := "INSERT INTO m_keys (name,publickey,privatekey) VALUES ($1, $2, $3)"
+	query = "INSERT INTO m_keys (name,publickey,privatekey) VALUES ($1, $2, $3)"
 
 	if _, err = db.Exec(query, modelKey.Name, modelKey.PublicKey, modelKey.PrivateKey); err != nil {
 		panic("it could not execute the next query " + query + " : " + err.Error())
@@ -62,11 +64,29 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	term := r.URL.Query().Get("text")
 	perPage := r.URL.Query().Get("perPage")
+	firstId := r.URL.Query().Get("firstId")
+	lastId := r.URL.Query().Get("lastId")
 
-	query := "SELECT id, name FROM m_keys ORDER BY id ASC LIMIT $1"
-	rows, err =  db.Query(query, perPage)
+	if term == "" {
 
-	if term != "" {
+		if firstId != "" {
+
+			query = "SELECT id, name FROM m_keys WHERE id < $1 ORDER BY id DESC LIMIT $2 "
+			rows, err =  db.Query(query, firstId, perPage)
+
+		} else if lastId != "" {
+
+			query = "SELECT id, name FROM m_keys WHERE id > $1 ORDER BY id ASC LIMIT $2 "
+			rows, err =  db.Query(query, lastId, perPage)
+
+		} else {
+
+			query = "SELECT id, name FROM m_keys ORDER BY id ASC LIMIT $1"
+			rows, err =  db.Query(query, perPage)
+
+		}
+
+	} else {
 		query = "SELECT id, name FROM m_keys WHERE lower(name) LIKE '%' || $1 || '%' ORDER BY id ASC LIMIT $2 "
 		rows, err =  db.Query(query, term, perPage)
 	}
@@ -108,7 +128,7 @@ func Encrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
+	query = "SELECT id,name,publickey FROM m_keys WHERE id = $1;"
 
 	var key models.Key
 	err = db.QueryRow(query, modelParams.Id).Scan(&key.Id, &key.Name, &key.PublicKey)
@@ -150,7 +170,7 @@ func Decrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
+	query = "SELECT id,name,privatekey FROM m_keys WHERE id = $1;"
 
 	var key models.Key
 	err = db.QueryRow(query, modelParams.Id).Scan(&key.Id, &key.Name, &key.PrivateKey)

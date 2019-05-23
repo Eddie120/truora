@@ -6,8 +6,16 @@ export async function loadKeys({commit}, params) {
         commit('setLoading', true, {root: true})
 
        let url = '/keys?perPage=' + params.perPage
-        if(params.filter != '') {
+        if(params.filter !== '') {
             url += '&text='+params.filter
+        }
+
+        if(params.firstId !== '' && typeof params.firstId !== 'undefined') {
+            url += '&firstId='+ params.firstId
+        }
+
+        if(params.lastId !== '' && typeof params.lastId !== 'undefined') {
+            url += '&lastId='+params.lastId
         }
 
         const {data} = await Vue.axios({
